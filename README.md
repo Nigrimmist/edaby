@@ -3,7 +3,7 @@ edaby
 
 eda.by free food script
 
-!["edaby"](http://c2n.me/j84yQD.jpg "edaby")
+!["edaby"](http://c2n.me/j84CIB.jpg "edaby")
 
 Copy and paste javscript script from script.js and run it on eda.by (by FireBug for example)!
 
