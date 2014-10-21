@@ -17,7 +17,7 @@ function runForestRun(){
       var clickCount = parseInt(clickCountStr[0]);
       var maxCount = parseInt(clickCountStr[2]);
       if(clickCount==maxCount-1){
-        console.log("Well, let's try...");
+        log("Well, let's try...");
         var clickHref = $('a',el);
         var rId = parseInt($(clickHref).attr('rel'));
         $.post(voteUpUrl,{act : 'crazyg', r : rId},
@@ -26,11 +26,11 @@ function runForestRun(){
                  if(isWin){
                     var prize = $(clickHref).attr('onmouseover')+'';
                     var title = $(title).text();                   
-                    console.log('You are awesome! You win : '+prize + result)
+                    log('You are awesome! You win : '+prize + result)
                  }
                  else
                  {
-                   console.log('Эх, почти...почти.'+result);
+                   log('Эх, почти...почти.'+result);
                  }                 
                })
         
@@ -49,7 +49,11 @@ function WaitTenMinAndRun(){
 	//wait 10 min
     setTimeout(function() {    
     runForestRun();    
-  }, 60 * 1000*10); 
+  }, 60*1000*10); 
+}
+
+function log(msg){
+$('body').prepend(msg+'<br />')
 }
 
 runForestRun();
