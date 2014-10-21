@@ -14,8 +14,8 @@ function runForestRun(){
       var el = omnomnomArray[i];     
       var title = $('p',el);
       var clickCountStr = $(title).text().split(' ');    
-      var clickCount = clickCountStr[0];
-      var maxCount = clickCountStr[2];
+      var clickCount = parseInt(clickCountStr[0]);
+      var maxCount = parseInt(clickCountStr[2]);
       if(clickCount==maxCount-1){
         console.log("Well, let's try...");
         var clickHref = $('a',el);
