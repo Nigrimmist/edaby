@@ -55,7 +55,7 @@ var closeToWinDiv = $('#closeToWin');
      return a.max-a.cur > b.max-b.cur ? 0 : 1;
 	});
 	var closesToWin = itemsArr.pop();
-	$(closeToWinDiv).html('До ближайшего осталось : '+(closesToWin.max-closesToWin.cur)+' клика');
+	$(closeToWinDiv).html('Кликов до ближайшего : <b>'+(closesToWin.max-closesToWin.cur)+'</b> клик');
 	
 });
   
