@@ -1,16 +1,26 @@
 ﻿(function()
 {
 $('.carousel,.carousel ul').css({'display':'inline','position':'initial'})
-$('body').prepend('<div id="closeToWin"></div>');
+$('body').prepend('<div id="closeToWin" /><div id="updateEvery"/>');
 var siteUrl = 'http://www.eda.by/news/113.html';
 var voteUpUrl = 'http://www.eda.by/enter.php';
 
+var frequencyRequests = [ // if less than n, then run every milliseconds
+				{count : 10000,time:1000*5}, //5s
+				{count : 30,time:1000},//1s
+				{count : 10,time:500},//0.5s
+				{count : 5,time:200}//0.2s
+				];
+var currentFreq = frequencyRequests[frequencyRequests.length-1];
+
 function runForestRun(){
 var closeToWinDiv = $('#closeToWin');
-  var checkCountInterval = setInterval(function(){
+  var checkCountTimeout = setTimeout(function(){
+  try{
+	
     $.get(siteUrl,function(r){
 
-    var omnomnomArray = $('.line-img');
+    var omnomnomArray = $('.line-img',r);
 	var itemsArr = [];
 	
       for(var i=0;i<omnomnomArray.length;i++){
@@ -44,9 +54,7 @@ var closeToWinDiv = $('#closeToWin');
                  {
                    log('Эх, почти...почти.'+prize+result+titleText);
                  }                 
-               })
-        
-        window.clearInterval(checkCountInterval);        
+               })               
         WaitTenMinAndRun();        
         return;
        }
@@ -55,11 +63,25 @@ var closeToWinDiv = $('#closeToWin');
      return a.max-a.cur > b.max-b.cur ? 0 : 1;
 	});
 	var closesToWin = itemsArr.pop();
+	
+	
+		for(var i=frequencyRequests.length-1;i>=0;i--){
+		if(closesToWin.cur<frequencyRequests[i].count){
+			currentFreq = frequencyRequests[i];
+			break;
+		}
+	}
 	$(closeToWinDiv).html('Кликов до ближайшего : <b>'+(closesToWin.max-closesToWin.cur)+'</b> клик');
+	$(updateEvery).html('Обновлятся каждые : <b>'+(currentFreq.time/1000)+' сек.</b>');
+	runForestRun();
+	
+	
 	
 });
-  
-  },500)
+  }catch(e){
+	log(e+'');
+	}
+  },currentFreq.time)
 }
 
 function WaitTenMinAndRun(){
