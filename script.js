@@ -12,9 +12,12 @@ var frequencyRequests = [ // if less than n, then run every milliseconds
 				{count : 5,time:200}//0.2s
 				];
 var currentFreq = frequencyRequests[frequencyRequests.length-1];
+var closeToWinDiv = $('#closeToWin');
+var updateEvery = $('#updateEvery');
 
 function runForestRun(){
-var closeToWinDiv = $('#closeToWin');
+
+
   var checkCountTimeout = setTimeout(function(){
   try{
 	
@@ -63,10 +66,8 @@ var closeToWinDiv = $('#closeToWin');
      return a.max-a.cur > b.max-b.cur ? 0 : 1;
 	});
 	var closesToWin = itemsArr.pop();
-	
-	
-		for(var i=frequencyRequests.length-1;i>=0;i--){
-		if(closesToWin.cur<frequencyRequests[i].count){
+	for(var i=frequencyRequests.length-1;i>=0;i--){
+		if((closesToWin.max-closesToWin.cur)<frequencyRequests[i].count){
 			currentFreq = frequencyRequests[i];
 			break;
 		}
