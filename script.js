@@ -8,10 +8,10 @@
             frequencyRequests: [ // send request frequency matrix
                 {
                     count: 10000,
-                    time: 1000 * 5
+                    time: 1000 * 10
                 }, //5s
                 {
-                    count: 30,
+                    count: 50,
                     time: 1000
                 }, //1s
                 {
@@ -28,20 +28,21 @@
             },
             clickBuffer: 1, //value that determine when click should appeared (max vote count - tryToClickCount). Should be equal to count of running scripts.
             blackItemIdList: [],
-            clickForVoteBeforeClosestClickCount: 40
+            clickForVoteBeforeClosestClickCount: 40 //for faster win! :)
         }, opts);
 
         var pauseMin = 10;
         //current send check request frequency in milliseconds
         var currentFreq = opts.frequencyRequests[opts.frequencyRequests.length - 1];
         var closeToWinDiv;
-        var updateEvery;
-
+        var updateEveryDiv;
+		var nextClickWillBeAfterDiv;
         this.init = function () {
             $('.carousel,.carousel ul').css({ 'display': 'inline', 'position': 'initial' });
-            $('body').prepend('<div id="closeToWin" /><div id="updateEvery"/>');
+            $('body').prepend('<div id="closeToWin" /><div id="updateEvery"/><div id="nextClickWillBeAfter"/>');
             closeToWinDiv = $('#closeToWin');
-            updateEvery = $('#updateEvery');
+            updateEveryDiv = $('#updateEvery');
+			nextClickWillBeAfterDiv = $('#nextClickWillBeAfter')
         };
 
         this.start = function () {
@@ -103,8 +104,7 @@
 
                 var stats = that._showStatisticInfo(itemsArr);
                 if (stats.totalToClick > opts.clickForVoteBeforeClosestClickCount) {
-                    that._emulateClickRequest(stats.closestToClickNode,true);
-                    that._startTimeout(pauseMin);
+                    that._emulateClickRequest(stats.closestToClickNode,true);                    
                     return;
                 }
                 that.start();
@@ -132,7 +132,12 @@
 						}
 					}
                 });
-
+				
+			if(isVoteClick)
+				that._startTimeout(pauseMin);
+			else			
+				that._stopTimeoutLog();
+			
         };
         this._parsePrize = function (str) {
             var regexp = /и получи (.*?)(?=<br>)/g;
@@ -154,20 +159,35 @@
             }
             var closestTitle =  that._parsePrize($('a', closeToWin.node).attr('onmouseover'));
             $(closeToWinDiv).html('Кликов до ближайшего : <b>' + totalToClick + '</b> ('+closestTitle+')');
-            $(updateEvery).html('Обновлятся каждые : <b>' + (currentFreq.time / 1000) + ' сек.</b>');
+            $(updateEveryDiv).html('Обновлятся каждые : <b>' + (currentFreq.time / 1000) + ' сек.</b>');
             return { totalToClick: totalToClick, closestToClickNode : closeToWin.node };
         };
 
         this._isUnknownTitle = function (str) {
             return str.indexOf('кликов') == -1 && str.indexOf('Ожидайте') == -1;
         };
-
-
-        this._startTimeout = function (min) {
+		
+		
+        this._startTimeout = function (min) {		
             setTimeout(function () {
                 that.start();
             }, 60 * 1000 * min);
+			that._startTimeoutLog();
         };
+		var secLeft = 0;
+		var logTimer=null;
+		this._startTimeoutLog = function(){
+			logTimer = setInterval(function(){
+				$(nextClickWillBeAfterDiv).html('До след клика осталось : <b>'+((pauseMin*60)-secLeft)+' секунд</b>');
+				secLeft++;
+			},1000);
+		}
+		this._stopTimeoutLog = function(){
+		if(logTimer!=null){
+			window.clearInterval(logTimer)
+			$(nextClickWillBeAfterDiv).html('<b>ЖДЁМ ФИНАЛЬНОГО КЛИКА</b>');
+			}
+		}
     }
 
     var eda = new edaby({
