@@ -36,12 +36,16 @@
         var currentFreq = opts.frequencyRequests[opts.frequencyRequests.length - 1];
         var closeToWinDiv;
         var updateEvery;
-
+		var lastClickDiv;
+		var lastClickTime = null;
+		
         this.init = function () {
             $('.carousel,.carousel ul').css({ 'display': 'inline', 'position': 'initial' });
-            $('body').prepend('<div id="closeToWin" /><div id="updateEvery"/>');
+            $('body').prepend('<div id="closeToWin" /><div id="updateEvery"/><div id="lastClick"/>');
             closeToWinDiv = $('#closeToWin');
             updateEvery = $('#updateEvery');
+			lastClickDiv = $('#lastClick');
+			that._startLastClickTimeLog();
         };
 
         this.start = function () {
@@ -97,15 +101,14 @@
                     if (clickCount >= maxCount - opts.clickBuffer) {
                         that._emulateClickRequest(voteItem,false);
                         that._startTimeout(pauseMin);
-                        return;
+                        break;
                     }
                 }
 
                 var stats = that._showStatisticInfo(itemsArr);
-                if (stats.totalToClick > opts.clickForVoteBeforeClosestClickCount) {
+                if (stats.totalToClick > opts.clickForVoteBeforeClosestClickCount && !that._isPaused()) {
                     that._emulateClickRequest(stats.closestToClickNode,true);
-                    that._startTimeout(pauseMin);
-                    return;
+                    that._startTimeout(pauseMin);                    
                 }
                 that.start();
             }
@@ -116,6 +119,7 @@
             var clickHref = $('a', clickToEl);
             var titleText = $(clickHref).text();
             var rId = parseInt($(clickHref).attr('rel'));
+			lastClickTime = new Date();			
             $.post(opts.voteUpUrl, {
                 act: 'crazyg',
                 r: rId
@@ -162,12 +166,33 @@
             return str.indexOf('кликов') == -1 && str.indexOf('Ожидайте') == -1;
         };
 
-
+		var isPaused = false;
         this._startTimeout = function (min) {
+			isPaused = true;
             setTimeout(function () {
-                that.start();
+				isPaused = false;
             }, 60 * 1000 * min);
         };
+		
+		this._isPaused = function(){return isPaused;};
+		
+		this._startLastClickTimeLog = function(){
+			setInterval(function(){
+				if(lastClickTime!=null)
+				{
+					$(lastClickDiv).html('Последний клик : <b>'+that._timeAgoFromEpochTime(lastClickTime.getTime() / 1000)+'</b> назад');
+				}	
+			},1000)	
+		}
+		
+		this._timeAgoFromEpochTime = function(epoch) {
+				var secs = ((new Date()).getTime() / 1000) - epoch;
+				Math.floor(secs);
+				var min = Math.floor(secs/60)
+				return ( (min>0?(min+'м. '):'')+(Math.floor(secs-min*60))+'сек.')
+					
+			}
+		
     }
 
     var eda = new edaby({
