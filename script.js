@@ -19,8 +19,8 @@
                     time: 500
                 }, //0.5s
                 {
-                    count: 5,
-                    time: 100
+                    count: 6,
+                    time: 200
                 } //0.2s
             ],
             log: function(msg) {
@@ -28,8 +28,9 @@
             },
             clickBuffer: 1, //value that determine when click should appeared (max vote count - tryToClickCount). Should be equal to count of running scripts.
             blackItemIdList: [],
-            clickForVoteBeforeClosestClickCount: 30, //for faster finish!
-			onWin : null
+            clickForVoteBeforeClosestClickCount: 20, //for faster finish!
+			onWin : null,
+			whiteList : []
 			}, opts);
 
         var pauseMin = 10;
@@ -39,7 +40,7 @@
         var updateEvery;
         var lastClickDiv;
         var lastClickTime = null;
-
+		var lastLoggedClick = 0;
         this.init = function() {
             $('.carousel,.carousel ul').css({
                 'display': 'inline',
@@ -64,19 +65,25 @@
 
         this._doRequest = function() {
 
-            $.get(opts.siteUrl, function(response) {
+            $.get(opts.siteUrl+new Date().getTime(), function(response) {
                 var tUniqueIdArr = [];
                 var voteItemArray = $.grep($('.line-img', response),
                     function(el) {
                         var id = parseInt($('a', el).attr('rel'));
-                        var isInBlackList = $.inArray(id, opts.blackItemIdList) != -1;
-                        if (!isInBlackList) {
+						console.log(id,(opts.whiteList.length>0 && $.inArray(id, opts.whiteList) != -1))
+						var shouldBeAdded = false;							
+						if(opts.whiteList.length>0) 
+							shouldBeAdded = $.inArray(id, opts.whiteList) != -1;
+						else 
+							shouldBeAdded = $.inArray(id, opts.blackItemIdList) == -1;
+						
+                        if (shouldBeAdded) {
                             //check for unique
                             if ($.inArray(id, tUniqueIdArr) == -1) {
                                 tUniqueIdArr.push(id);
                                 return true;
                             }
-                        }
+                        }						
                         return false;
                     }
                 );
@@ -92,9 +99,11 @@
                         cur: clickCount,
                         max: maxCount,
                         node: voteItem
-                    });
-
+                    });			
+					
+					
                     if (clickCount >= maxCount - opts.clickBuffer) {
+						opts.log('catched '+clickCount);
                         that._emulateClickRequest(voteItem, false);
                         that._startTimeout(pauseMin);
                         break;
@@ -102,6 +111,7 @@
                 }
 
                 var stats = that._showStatisticInfo(itemsArr);
+				
                 if (stats.totalToClick > opts.clickForVoteBeforeClosestClickCount && !that._isPaused()) {
                     that._emulateClickRequest(stats.closestToClickNode, true);
                     that._startTimeout(pauseMin);
@@ -212,7 +222,7 @@ function SmsSender(options){
 	}
 
 	
-	var sms = new SmsSender({login:'',pwd:'',number:''}).send('test');
+	var sms = new SmsSender({login:'',pwd:'',number:''});
     var eda = new edaby({
         log: function(msg) {
             $('body').prepend(msg + '<br />');
@@ -220,9 +230,10 @@ function SmsSender(options){
         clickBuffer: 3,
         blackItemIdList: [
             19, //караоке о_О
-            21, //фитнесс
-            22 //салон красоты			
+            21, //фитнесс 
+			20, //десерт
         ],
+		whiteList : [24,25],
 		onWin : function(winAccName){
 			sms.send('edaby win '+winAccName);
 		}
